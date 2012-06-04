@@ -13,7 +13,7 @@ object Calculator extends RegexParsers with PackratParsers {
     _._1._2
   }
   
-  lazy val multiplication: PackratParser[Node] = expr ~ "*" ~ factor ^^ {
+  lazy val multiplication: PackratParser[Node] = term ~ "*" ~ factor ^^ {
     x => OpNode("*", x._1._1, x._2)
   }
   
@@ -27,7 +27,11 @@ object Calculator extends RegexParsers with PackratParsers {
     x => OpNode("-", x._1._1, x._2)
   }
   
-  lazy val term: PackratParser[Node] = multiplication | factor
+  lazy val division: PackratParser[Node] = term ~ "/" ~ factor ^^ {
+    x => OpNode("/", x._1._1, x._2)
+  }
+  
+  lazy val term: PackratParser[Node] = multiplication | division | factor
 
   lazy val factor: PackratParser[Node] = parens | int
 
@@ -36,7 +40,7 @@ object Calculator extends RegexParsers with PackratParsers {
   lazy val eval: PackratParser[Int] = expr ^^ {
     _.eval
   }
-
+  
   def apply(input: String): Number = parseAll(eval, input) match {
     case Success(result, _) => result
     case failure: NoSuccess => scala.sys.error(failure.msg)
@@ -49,6 +53,7 @@ trait Node {
     case OpNode("*", left, right) => left.eval * right.eval
     case OpNode("+", left, right) => left.eval + right.eval
     case OpNode("-", left, right) => left.eval - right.eval
+    case OpNode("/", left, right) => left.eval / right.eval
   }
 }
 

@@ -45,7 +45,18 @@ class CalculatorSpec extends FunSpec {
       it("Should handle mixed precedence levels") {
         assert(Calculator("2 * 4 + 2 * 8 * 9 * 6") === 2 * 4 + 2 * 8 * 9 * 6)
       }
-
+      
+      it("Should handle division") {
+      	assert(Calculator("7 / 2") === 7 / 2)
+      }
+      
+      it("Should handle iterated division") {
+        assert(Calculator("897 / 5 / 2") === 897 / 5 /2)
+      }
+      
+      it("Should handle many operators") {
+        assert(Calculator("( 100 + 20 / 5 ) * 4") === ( 100 + 20 / 5 ) * 4)
+      }
     }
   }
 }
