@@ -1,36 +1,39 @@
 import scala.util.parsing.combinator.RegexParsers
+import scala.util.parsing.combinator.PackratParsers
 
-object Calculator extends RegexParsers {
+object Calculator extends RegexParsers with PackratParsers {
 
   val NUMBER = """\d+""".r
 
-  def int: Parser[NumberNode] = NUMBER ^^ {
+  lazy val int: PackratParser[NumberNode] = NUMBER ^^ {
     case elt => NumberNode(elt.toInt)
   }
 
-  def parens: Parser[Node] = "(" ~ expr ~ ")" ^^ {
+  lazy val parens: PackratParser[Node] = "(" ~ expr ~ ")" ^^ {
     _._1._2
   }
   
-  def multiplication: Parser[Node] = term ~ "*" ~ expr ^^ {
+  lazy val multiplication: PackratParser[Node] = expr ~ "*" ~ factor ^^ {
     x => OpNode("*", x._1._1, x._2)
   }
   
-  def addsub: Parser[Node] = add | sub
+  lazy val addsub: PackratParser[Node] = add | sub
   
-  def add: Parser[Node] = term ~ "+" ~ expr ^^ {
+  lazy val add: PackratParser[Node] = expr ~ "+" ~ term ^^ {
     x => OpNode("+", x._1._1, x._2)
   }
   
-  def sub: Parser[Node] = term ~ "-" ~ expr ^^ {
+  lazy val sub: PackratParser[Node] = expr ~ "-" ~ term ^^ {
     x => OpNode("-", x._1._1, x._2)
   }
   
-  def term: Parser[Node] = parens | int
+  lazy val term: PackratParser[Node] = multiplication | factor
 
-  def expr: Parser[Node] = addsub | multiplication | term
+  lazy val factor: PackratParser[Node] = parens | int
 
-  def eval: Parser[Int] = expr ^^ {
+  lazy val expr: PackratParser[Node] =  addsub | term
+
+  lazy val eval: PackratParser[Int] = expr ^^ {
     _.eval
   }
 
@@ -51,4 +54,4 @@ trait Node {
 
 case class NumberNode(contents: Int) extends Node
 
-case class OpNode(contents: String, left: Node, right: Node) extends Node 
+case class OpNode(contents: String, left: Node, right: Node) extends Node
